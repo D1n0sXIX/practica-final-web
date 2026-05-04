@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { createProject, getProjects, getProject, updateProject, deleteProject, getArchivedProjects, restoreProject} from '../controllers/project.controller.js'    
 import { authMiddleware } from '../middleware/auth.middleware.js'
+import { createProjectSchema, updateProjectSchema } from '../validators/project.validator.js'
+import { validate } from '../middleware/validate.js'
 
 const router = Router()
 /**
@@ -30,7 +32,7 @@ const router = Router()
  *       404:
  *         description: Cliente no encontrado
  */
-router.post('/', authMiddleware, createProject)
+router.post('/', authMiddleware, validate(createProjectSchema), createProject)
 /**
  * @swagger
  * /api/project:
@@ -96,7 +98,7 @@ router.get('/:id', authMiddleware, getProject)
  *       200:
  *         description: Proyecto actualizado
  */
-router.put('/:id', authMiddleware, updateProject)
+router.put('/:id', authMiddleware, validate(updateProjectSchema), updateProject)
 /**
  * @swagger
  * /api/project/{id}:
@@ -135,6 +137,6 @@ router.delete('/:id', authMiddleware, deleteProject)
  *       200:
  *         description: Proyecto restaurado
  */
-router.patch('/restore/:id', authMiddleware, restoreProject)
+router.patch('/:id/restore', authMiddleware, validate(createProjectSchema), restoreProject)
 
 export default router

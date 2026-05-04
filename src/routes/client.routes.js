@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { createClient, getClients, getClient, updateClient, deleteClient, getArchivedClients, restoreClient} from '../controllers/client.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
+import { validate } from '../middleware/validate.js'
+import { createClientSchema, updateClientSchema } from '../validators/client.validator.js'
 
 const router = Router()
 /**
@@ -30,7 +32,7 @@ const router = Router()
  *       409:
  *         description: CIF ya existe
  */
-router.post('/', authMiddleware, createClient)
+router.post('/', authMiddleware, validate(createClientSchema), createClient)
 /**
  * @swagger
  * /api/client:
@@ -62,7 +64,7 @@ router.get('/', authMiddleware, getClients)
  *       200:
  *         description: Cliente actualizado
  */
-router.put('/:id', authMiddleware, updateClient)
+router.put('/:id', authMiddleware, validate(updateClientSchema), updateClient)
 /**
  * @swagger
  * /api/client/{id}:

@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { createDeliveryNote, getDeliveryNotes, getDeliveryNote, deleteDeliveryNote, signDeliveryNote, getDeliveryNotePDF } from '../controllers/deliverynote.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
+import { validate } from '../middleware/validate.js'
+import { createDeliveryNoteSchema } from '../validators/deliverynote.validator.js'
 const router = Router()
 
 /**
@@ -31,7 +33,7 @@ const router = Router()
  *       404:
  *         description: Proyecto no encontrado
  */
-router.post('/', authMiddleware, createDeliveryNote)
+router.post('/', authMiddleware, validate(createDeliveryNoteSchema), createDeliveryNote)
 /**
  * @swagger
  * /api/deliverynote:
@@ -107,8 +109,7 @@ router.get('/:id', authMiddleware, getDeliveryNote)
  *       400:
  *         description: No se puede borrar un albarán firmado
  */
-router.delete('/:id', authMiddleware, deleteDeliveryNote)
-/**
+router.delete('/:id', authMiddleware, deleteDeliveryNote)/**
  * @swagger
  * /api/deliverynote/{id}/sign:
  *   patch:
