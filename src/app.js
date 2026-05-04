@@ -3,7 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
-import errorHandler from './middleware/error-Handler.js';
+import { errorHandler } from './middleware/error-handler.js'
+import routes from './routes/index.js';
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(rateLimit({
 }));
 app.use(express.json({ limit: '10kb' }));
 app.use(mongoSanitize());
-// TODO: aquí conectaremos las rutas
+app.use('/api', routes);
 app.use(errorHandler);
 
 
