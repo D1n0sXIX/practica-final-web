@@ -15,7 +15,7 @@ export const createClient = async (req, res, next) => {
             company: user.company._id
         })
         if (existingClient) {
-            throw new AppError('Client with same CIF already exists', 400)
+            return next(AppError.conflict('Ya existe un cliente con ese CIF'))
         }
         const client = new Client({
             ...req.body,

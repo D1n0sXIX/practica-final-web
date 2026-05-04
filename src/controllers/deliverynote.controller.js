@@ -24,7 +24,8 @@ export const createDeliveryNote = async (req, res, next) => {
         const deliveryNote = await DeliveryNote.create({
             ...req.body,
             user: userId,
-            company: user.company._id
+            company: user.company._id,
+            client: project.client
         })
         res.status(201).json({
             status: 'success',
