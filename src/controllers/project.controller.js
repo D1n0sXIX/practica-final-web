@@ -34,21 +34,39 @@ export const createProject = async (req, res, next) => {
         next(error)
     }
 }
-
 export const getProjects = async (req, res, next) => {
     try {
         const { userId } = req.user
         const user = await User.findById(userId).populate('company')
-        if (!user) {
-            throw new AppError('User not found', 404)
-        }
-        const projects = await Project.find({
+        if (!user) return next(AppError.notFound('Usuario'))
+
+        const { page = 1, limit = 10, name, client, active, sort = 'createdAt' } = req.query
+
+        const filter = {
             company: user.company._id,
             deleted: false
-        })
+        }
+        if (name) filter.name = { $regex: name, $options: 'i' }
+        if (client) filter.client = client
+        if (active !== undefined) filter.active = active === 'true'
+
+        const skip = (page - 1) * limit
+        const totalItems = await Project.countDocuments(filter)
+        const totalPages = Math.ceil(totalItems / limit)
+
+        const projects = await Project.find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(Number(limit))
+
         res.status(200).json({
             status: 'success',
-            data: projects
+            data: projects,
+            pagination: {
+                totalItems,
+                totalPages,
+                currentPage: Number(page)
+            }
         })
     } catch (error) {
         next(error)

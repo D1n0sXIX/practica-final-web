@@ -39,18 +39,37 @@ export const getClients = async (req, res, next) => {
     try {
         const { userId } = req.user
         const user = await User.findById(userId).populate('company')
-        if (!user) {
-            throw new AppError('User not found', 404)
-        }
-        const clients = await Client.find({
+        if (!user) return next(AppError.notFound('Usuario'))
+
+        // 1. Extraer query params
+        const { page = 1, limit = 10, name, sort = 'createdAt' } = req.query
+
+        // 2. Construir filtro
+        const filter = {
             company: user.company._id,
             deleted: false
-        })
+        }
+        if (name) filter.name = { $regex: name, $options: 'i' }
+
+        // 3. Paginar
+        const skip = (page - 1) * limit
+        const totalItems = await Client.countDocuments(filter)
+        const totalPages = Math.ceil(totalItems / limit)
+
+        const clients = await Client.find(filter)
+            .sort(sort)
+            .skip(skip)
+            .limit(Number(limit))
+
         res.status(200).json({
             status: 'success',
-            data: clients
+            data: clients,
+            pagination: {
+                totalItems,
+                totalPages,
+                currentPage: Number(page)
+            }
         })
-
     } catch (error) {
         next(error)
     }
