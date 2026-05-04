@@ -3,6 +3,7 @@ import Company from '../models/Company.js'
 import Client from '../models/Client.js'
 import Project from '../models/Project.js'
 import { AppError } from '../utils/AppError.js'
+import { getIO } from '../config/socket.js'
 
 export const createProject = async (req, res, next) => {
     try {
@@ -24,6 +25,7 @@ export const createProject = async (req, res, next) => {
             user: userId,
             company: user.company._id
         })
+        getIO().to(user.company._id.toString()).emit('project:new', project)
         res.status(201).json({
             status: 'success',
             data: project
@@ -110,23 +112,22 @@ export const deleteProject = async (req, res, next) => {
         const { userId } = req.user
         const user = await User.findById(userId).populate('company')
         if (!user) {
-            throw new AppError('User not found', 404)
+            return next(AppError.notFound('Usuario'))
         }
-        const project = await Project.findOne({
-            _id: req.params.id,
-            company: user.company._id,
-            deleted: false
-        })
+        const project = await Project.findOneAndUpdate(
+            {
+                _id: req.params.id,
+                company: user.company._id,
+                deleted: false
+            },
+            { deleted: true },
+            { returnDocument: 'after' }
+        )
         if (!project) {
-            throw new AppError('Project not found', 404)
-        }   
-
-        await Project.findByIdAndUpdate(req.params.id, { deleted: true })
-        res.status(204).json({
-            status: 'success',
-            data: null
-        })
-    }   catch (error) {
+            return next(AppError.notFound('Project'))
+        }
+        res.status(204).json({ status: 'success', data: null })
+    } catch (error) {
         next(error)
     }
 }

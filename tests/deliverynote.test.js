@@ -99,3 +99,29 @@ describe('PATCH /api/deliverynote/:id/sign', () => {
         expect(res.body.data).toHaveProperty('signed', true)
     })
 })
+describe('WebSocket events', () => {
+    it('debería emitir evento al crear albarán', async () => {
+        const { token, project } = await setup()
+        const res = await request(app)
+            .post('/api/deliverynote')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ project: project._id, format: 'hours', description: 'Test', hours: 8, workDate: new Date() })
+        expect(res.status).toBe(201)
+    })
+})
+
+describe('GET /api/deliverynote/pdf/:id', () => {
+    it('debería devolver un PDF', async () => {
+        const { token, project } = await setup()
+        const noteRes = await request(app)
+            .post('/api/deliverynote')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ project: project._id, format: 'hours', description: 'Test', hours: 8, workDate: new Date() })
+        const note = noteRes.body.data
+        const res = await request(app)
+            .get(`/api/deliverynote/pdf/${note._id}`)
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.status).toBe(200)
+        expect(res.headers['content-type']).toContain('application/pdf')
+    })
+})

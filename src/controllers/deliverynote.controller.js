@@ -4,6 +4,9 @@ import Client from '../models/Client.js'
 import Project from '../models/Project.js'
 import DeliveryNote from '../models/DeliveryNote.js'
 import { AppError } from '../utils/AppError.js'
+import { getIO } from '../config/socket.js'
+import { generatePDF } from '../services/pdf.service.js'
+
 
 export const createDeliveryNote = async (req, res, next) => {
     try {
@@ -27,6 +30,7 @@ export const createDeliveryNote = async (req, res, next) => {
             company: user.company._id,
             client: project.client
         })
+        getIO().to(user.company._id.toString()).emit('deliverynote:new', deliveryNote)
         res.status(201).json({
             status: 'success',
             data: deliveryNote
@@ -126,6 +130,7 @@ export const signDeliveryNote = async (req, res, next) => {
         }
         deliveryNote.signed = true
         await deliveryNote.save()
+        getIO().to(user.company._id.toString()).emit('deliverynote:signed', deliveryNote)
         res.status(200).json({
             status: 'success',
             data: deliveryNote
@@ -149,8 +154,10 @@ export const getDeliveryNotePDF = async (req, res, next) => {
         
         if (!deliveryNote) return next(AppError.notFound('Albarán'))
 
-        // TODO: generar PDF con pdfkit
-        res.status(200).json({ status: 'success', data: deliveryNote })
+        const pdfBuffer = await generatePDF(deliveryNote)
+        res.setHeader('Content-Type', 'application/pdf')
+        res.setHeader('Content-Disposition', `attachment; filename=albaran-${deliveryNote._id}.pdf`)
+        res.send(pdfBuffer)
     } catch (error) {
         next(error)
     }

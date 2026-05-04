@@ -95,3 +95,33 @@ describe('DELETE /api/project/:id', () => {
         expect(res.status).toBe(204)
     })
 })
+
+describe('PUT /api/project/:id', () => {
+    it('debería actualizar un proyecto', async () => {
+        const token = await registerAndLogin()
+        const client = await createClient(token)
+        const project = await createProject(token, client._id)
+        const res = await request(app)
+            .put(`/api/project/${project._id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'Proyecto Actualizado' })
+        expect(res.status).toBe(200)
+        expect(res.body.data).toHaveProperty('name', 'Proyecto Actualizado')
+    })
+})
+
+describe('GET /api/project/archived', () => {
+    it('debería listar proyectos archivados', async () => {
+        const token = await registerAndLogin()
+        const client = await createClient(token)
+        const project = await createProject(token, client._id)
+        await request(app)
+            .delete(`/api/project/${project._id}`)
+            .set('Authorization', `Bearer ${token}`)
+        const res = await request(app)
+            .get('/api/project/archived')
+            .set('Authorization', `Bearer ${token}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.length).toBe(1)
+    })
+})

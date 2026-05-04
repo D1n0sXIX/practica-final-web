@@ -2,6 +2,8 @@ import User from '../models/User.js'
 import Company from '../models/Company.js'
 import Client from '../models/Client.js'
 import { AppError } from '../utils/AppError.js'
+import { getIO } from '../config/socket.js'
+
 
 export const createClient = async (req, res, next) => {
     try {
@@ -23,6 +25,7 @@ export const createClient = async (req, res, next) => {
             company: user.company._id
         })
         await client.save()
+        getIO().to(user.company._id.toString()).emit('client:new', client)
         res.status(201).json({
             status: 'success',
             data: client
