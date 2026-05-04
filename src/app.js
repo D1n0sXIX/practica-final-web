@@ -1,10 +1,10 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/error-handler.js'
 import routes from './routes/index.js';
+import { sanitize } from './middleware/sanitize.js';
 
 const app = express();
 
@@ -15,9 +15,8 @@ app.use(rateLimit({
     max: 100
 }));
 app.use(express.json({ limit: '10kb' }));
-app.use(mongoSanitize());
+app.use(sanitize);
 app.use('/api', routes);
 app.use(errorHandler);
-
 
 export default app;
