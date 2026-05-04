@@ -44,42 +44,16 @@ export const getDeliveryNotes = async (req, res, next) => {
     try {
         const { userId } = req.user
         const user = await User.findById(userId).populate('company')
-        if (!user) return next(AppError.notFound('Usuario'))
-
-        const { page = 1, limit = 10, project, client, format, signed, from, to, sort = '-workDate' } = req.query
-
-        const filter = {
+        if (!user) {
+            throw new AppError('User not found', 404)
+        }
+        const deliveryNotes = await DeliveryNote.find({
             company: user.company._id,
             deleted: false
-        }
-        if (project) filter.project = project
-        if (client) filter.client = client
-        if (format) filter.format = format
-        if (signed !== undefined) filter.signed = signed === 'true'
-        if (from || to) {
-            filter.workDate = {}
-            if (from) filter.workDate.$gte = new Date(from)
-            if (to) filter.workDate.$lte = new Date(to)
-        }
-
-        const skip = (page - 1) * limit
-        const totalItems = await DeliveryNote.countDocuments(filter)
-        const totalPages = Math.ceil(totalItems / limit)
-
-        const deliveryNotes = await DeliveryNote.find(filter)
-            .sort(sort)
-            .skip(skip)
-            .limit(Number(limit))
-            .populate('user client project')
-
+        })
         res.status(200).json({
             status: 'success',
-            data: deliveryNotes,
-            pagination: {
-                totalItems,
-                totalPages,
-                currentPage: Number(page)
-            }
+            data: deliveryNotes
         })
     } catch (error) {
         next(error)
