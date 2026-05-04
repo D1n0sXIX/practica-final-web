@@ -7,7 +7,6 @@ import { AppError } from '../utils/AppError.js'
 export const createProject = async (req, res, next) => {
     try {
         const { userId } = req.user
-        // Comprobamos que el client del body existe y pertenece a la misma company
         const user = await User.findById(userId).populate('company')
         if (!user) {
             throw new AppError('User not found', 404)

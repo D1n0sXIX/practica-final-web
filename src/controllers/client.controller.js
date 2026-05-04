@@ -5,14 +5,11 @@ import { AppError } from '../utils/AppError.js'
 
 export const createClient = async (req, res, next) => {
     try {
-        // 1. sacar userId del token
         const { userId } = req.user
-        // 2. buscar el usuario para obtener su company
         const user = await User.findById(userId).populate('company')
         if (!user) {
             throw new AppError('User not found', 404)
         }
-        // 3. comprobar que no existe cliente con mismo CIF en esa company
         const existingClient = await Client.findOne({
             cif: req.body.cif,
             company: user.company._id
@@ -20,14 +17,12 @@ export const createClient = async (req, res, next) => {
         if (existingClient) {
             throw new AppError('Client with same CIF already exists', 400)
         }
-        // 4. crear y guardar el cliente
         const client = new Client({
             ...req.body,
             user: userId,
             company: user.company._id
         })
         await client.save()
-        // 5. devolver respuesta
         res.status(201).json({
             status: 'success',
             data: client
@@ -44,7 +39,6 @@ export const getClients = async (req, res, next) => {
         if (!user) {
             throw new AppError('User not found', 404)
         }
-        // Buscar todos los clientes de esa company donde deleted: false
         const clients = await Client.find({
             company: user.company._id,
             deleted: false
