@@ -6,6 +6,8 @@ beforeAll(async () => await connect())
 afterAll(async () => await closeDatabase())
 afterEach(async () => await clearDatabase())
 
+
+
 const registerAndLogin = async () => {
     const res = await request(app)
         .post('/api/user/register')
@@ -95,10 +97,12 @@ describe('PATCH /api/deliverynote/:id/sign', () => {
         const res = await request(app)
             .patch(`/api/deliverynote/${note._id}/sign`)
             .set('Authorization', `Bearer ${token}`)
+            .attach('signature', Buffer.from('fake-image'), 'signature.png')
         expect(res.status).toBe(200)
         expect(res.body.data).toHaveProperty('signed', true)
     })
 })
+
 describe('WebSocket events', () => {
     it('debería emitir evento al crear albarán', async () => {
         const { token, project } = await setup()

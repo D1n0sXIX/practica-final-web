@@ -3,6 +3,8 @@ import { createDeliveryNote, getDeliveryNotes, getDeliveryNote, deleteDeliveryNo
 import { authMiddleware } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.js'
 import { createDeliveryNoteSchema } from '../validators/deliverynote.validator.js'
+import upload from '../middleware/upload.js'
+
 const router = Router()
 
 /**
@@ -129,7 +131,7 @@ router.delete('/:id', authMiddleware, deleteDeliveryNote)/**
  *       404:
  *         description: Albarán no encontrado
  */
-router.patch('/:id/sign', authMiddleware, signDeliveryNote)
+router.patch('/:id/sign', authMiddleware, upload.single('signature'), signDeliveryNote)
 
 
 export default router

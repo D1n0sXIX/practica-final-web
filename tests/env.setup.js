@@ -1,2 +1,5 @@
 process.env.JWT_SECRET = 'test_secret_key_para_jest'
 process.env.JWT_REFRESH_SECRET = 'test_refresh_secret_key_para_jest'
+process.env.CLOUDINARY_CLOUD_NAME = 'test'
+process.env.CLOUDINARY_API_KEY = 'test'
+process.env.CLOUDINARY_API_SECRET = 'test'

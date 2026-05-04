@@ -6,6 +6,7 @@ import DeliveryNote from '../models/DeliveryNote.js'
 import { AppError } from '../utils/AppError.js'
 import { getIO } from '../config/socket.js'
 import { generatePDF } from '../services/pdf.service.js'
+import { uploadImage } from '../services/storage.service.js'
 
 
 export const createDeliveryNote = async (req, res, next) => {
@@ -128,6 +129,14 @@ export const signDeliveryNote = async (req, res, next) => {
         if (!deliveryNote) {
             throw new AppError('Delivery note not found', 404)
         }
+        if (!req.file) {
+            return next(AppError.badRequest('Se requiere imagen de firma'))
+        }
+
+        const result = await uploadImage(req.file.path)
+        deliveryNote.signatureUrl = result.secure_url
+        deliveryNote.signed = true
+        deliveryNote.signedAt = new Date()
         deliveryNote.signed = true
         await deliveryNote.save()
         getIO().to(user.company._id.toString()).emit('deliverynote:signed', deliveryNote)
