@@ -12,7 +12,6 @@ import { uploadImage } from '../services/storage.service.js'
 export const createDeliveryNote = async (req, res, next) => {
     try {
         const { userId } = req.user
-        // hayque verificar que el project del body existe y pertenece a la misma company
         const user = await User.findById(userId).populate('company')
         if (!user) {
             throw new AppError('User not found', 404)

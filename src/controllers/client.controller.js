@@ -41,17 +41,13 @@ export const getClients = async (req, res, next) => {
         const user = await User.findById(userId).populate('company')
         if (!user) return next(AppError.notFound('Usuario'))
 
-        // 1. Extraer query params
         const { page = 1, limit = 10, name, sort = 'createdAt' } = req.query
-
-        // 2. Construir filtro
         const filter = {
             company: user.company._id,
             deleted: false
         }
         if (name) filter.name = { $regex: name, $options: 'i' }
 
-        // 3. Paginar
         const skip = (page - 1) * limit
         const totalItems = await Client.countDocuments(filter)
         const totalPages = Math.ceil(totalItems / limit)

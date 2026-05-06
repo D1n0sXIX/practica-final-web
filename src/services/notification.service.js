@@ -2,7 +2,6 @@ import { EventEmitter } from 'node:events'
 
 const emitter = new EventEmitter()
 
-// Listeners
 emitter.on('user:registered', (data) => {
     console.log('Usuario registrado:', data)
 })
@@ -19,7 +18,6 @@ emitter.on('user:deleted', (data) => {
     console.log('Usuario eliminado:', data)
 })
 
-// Add personal
 emitter.on('user:login', (data) => {
     console.log('Usuario ha iniciado sesión:', data)
 })
